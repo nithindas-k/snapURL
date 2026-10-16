@@ -114,6 +114,16 @@ export default function DashboardPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
+  const handleShortUrlClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const anchor = e.currentTarget;
+    // Optimistically increment click count in local state
+    setUrls((prev) =>
+      prev.map((u) => (u.id === id ? { ...u, clickCount: u.clickCount + 1 } : u))
+    );
+    window.open(anchor.href, '_blank', 'noopener,noreferrer');
+  };
+
   const getRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -252,9 +262,9 @@ export default function DashboardPage() {
                           <div className="flex items-center space-x-2">
                             <a
                               href={getFullShortUrl(url.shortCode)}
-                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-foreground font-medium hover:underline flex items-center gap-1 group"
+                              onClick={(e) => handleShortUrlClick(e, url.id)}
                             >
                               {cleanDisplayUrl(getFullShortUrl(url.shortCode))}
                               <ExternalLink className="h-3.5 w-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
