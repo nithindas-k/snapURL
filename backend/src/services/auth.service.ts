@@ -1,22 +1,19 @@
 import { IAuthService, AuthResponseDto } from './interfaces/IAuthService';
 import { IUserRepository } from '../repositories/interfaces/IUserRepository';
-import { UserResponseDto } from '../mappers/interfaces/IUserMapper';
-import { UserMapper } from '../mappers/user.mapper';
-import { HashUtil } from '../utils/hash.util';
-import { TokenUtil } from '../utils/token.util';
+import { IHashService } from './interfaces/IHashService';
+import { ITokenService } from './interfaces/ITokenService';
+import { IUserMapper, UserResponseDto } from '../mappers/interfaces/IUserMapper';
 import { MESSAGES } from '../constants/messages.constants';
 import { STATUS_CODES } from '../constants/status-codes.constants';
-
-export class AppError extends Error {
-  constructor(public message: string, public statusCode: number) {
-    super(message);
-  }
-}
+import { AppError } from '../errors/app.error';
 
 export class AuthService implements IAuthService {
-  private userMapper = new UserMapper();
-
-  constructor(private userRepository: IUserRepository) {}
+  constructor(
+    private userRepository: IUserRepository,
+    private hashService: IHashService,
+    private tokenService: ITokenService,
+    private userMapper: IUserMapper
+  ) {}
 
   async register(
     email: string,
@@ -32,7 +29,7 @@ export class AuthService implements IAuthService {
       throw new AppError(MESSAGES.AUTH.USER_EXISTS, STATUS_CODES.CONFLICT);
     }
 
-    const hashedPassword = await HashUtil.hash(password);
+    const hashedPassword = await this.hashService.hash(password);
     const user = await this.userRepository.create(email, hashedPassword);
     return this.userMapper.toResponse(user);
   }
@@ -43,12 +40,12 @@ export class AuthService implements IAuthService {
       throw new AppError(MESSAGES.AUTH.INVALID_CREDENTIALS, STATUS_CODES.UNAUTHORIZED);
     }
 
-    const isMatch = await HashUtil.compare(password, user.password);
+    const isMatch = await this.hashService.compare(password, user.password);
     if (!isMatch) {
       throw new AppError(MESSAGES.AUTH.INVALID_CREDENTIALS, STATUS_CODES.UNAUTHORIZED);
     }
 
-    const accessToken = TokenUtil.sign({
+    const accessToken = this.tokenService.sign({
       sub: (user._id as any).toString(),
       email: user.email,
     });

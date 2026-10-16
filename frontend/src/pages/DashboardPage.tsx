@@ -81,8 +81,19 @@ export default function DashboardPage() {
         throw new Error(response.data?.message || 'Failed to shorten URL.');
       }
     } catch (error: any) {
+      const status = error.response?.status;
       const serverMessage = error.response?.data?.message || error.message || 'An error occurred.';
-      toast.error(serverMessage);
+      const serverData = error.response?.data?.data;
+
+      if (status === 409 && serverData) {
+        // URL already shortened — show warning and highlight existing entry
+        toast.warning(serverMessage, {
+          description: `Your existing short URL: ${getFullShortUrl(serverData.shortCode)}`,
+        });
+        reset();
+      } else {
+        toast.error(serverMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }

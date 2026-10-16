@@ -4,7 +4,7 @@ import { IAuthService } from '../services/interfaces/IAuthService';
 import { ResponseUtil } from '../utils/response.util';
 import { MESSAGES } from '../constants/messages.constants';
 import { STATUS_CODES } from '../constants/status-codes.constants';
-import { AppError } from '../services/auth.service';
+import { AppError } from '../errors/app.error';
 
 export class AuthController implements IAuthController {
   constructor(private authService: IAuthService) {}

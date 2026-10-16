@@ -21,9 +21,10 @@ export class ResponseUtil {
   static error(
     res: Response,
     message: string,
-    statusCode = 500
+    statusCode = 500,
+    data: unknown = null
   ): Response {
-    const body: ApiResponse<null> = { success: false, statusCode, message, data: null };
+    const body = { success: false, statusCode, message, data };
     return res.status(statusCode).json(body);
   }
 }

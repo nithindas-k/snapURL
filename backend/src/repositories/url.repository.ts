@@ -14,6 +14,10 @@ export class UrlRepository implements IUrlRepository {
     return UrlModel.findOne({ shortCode });
   }
 
+  async findByOriginalUrlAndUserId(originalUrl: string, userId: string): Promise<IUrl | null> {
+    return UrlModel.findOne({ originalUrl, userId });
+  }
+
   async shortCodeExists(shortCode: string): Promise<boolean> {
     const doc = await UrlModel.findOne({ shortCode }).select('_id');
     return !!doc;

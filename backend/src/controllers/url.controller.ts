@@ -4,7 +4,7 @@ import { IUrlService } from '../services/interfaces/IUrlService';
 import { ResponseUtil } from '../utils/response.util';
 import { MESSAGES } from '../constants/messages.constants';
 import { STATUS_CODES } from '../constants/status-codes.constants';
-import { AppError } from '../services/auth.service';
+import { AppError } from '../errors/app.error';
 
 export class UrlController implements IUrlController {
   constructor(private urlService: IUrlService) {}
@@ -17,7 +17,7 @@ export class UrlController implements IUrlController {
       ResponseUtil.success(res, MESSAGES.URL.CREATE_SUCCESS, result, STATUS_CODES.CREATED);
     } catch (error) {
       if (error instanceof AppError) {
-        ResponseUtil.error(res, error.message, error.statusCode);
+        ResponseUtil.error(res, error.message, error.statusCode, error.data ?? null);
       } else {
         ResponseUtil.error(res, MESSAGES.SERVER.INTERNAL_ERROR, STATUS_CODES.INTERNAL_SERVER_ERROR);
       }

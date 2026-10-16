@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { IAuthMiddleware } from './interfaces/IAuthMiddleware';
-import { TokenUtil } from '../utils/token.util';
+import { ITokenService } from '../services/interfaces/ITokenService';
 import { ResponseUtil } from '../utils/response.util';
 import { MESSAGES } from '../constants/messages.constants';
 import { STATUS_CODES } from '../constants/status-codes.constants';
@@ -16,6 +16,8 @@ declare global {
 }
 
 export class AuthMiddleware implements IAuthMiddleware {
+  constructor(private tokenService: ITokenService) {}
+
   protect(req: Request, res: Response, next: NextFunction): void {
     const authHeader = req.headers[APP_CONSTANTS.TOKEN_HEADER.toLowerCase()];
 
@@ -27,7 +29,7 @@ export class AuthMiddleware implements IAuthMiddleware {
     const token = String(authHeader).split(' ')[1];
 
     try {
-      const payload = TokenUtil.verify(token);
+      const payload = this.tokenService.verify(token);
       req.user = { id: payload.sub, email: payload.email };
       next();
     } catch {

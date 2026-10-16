@@ -11,6 +11,7 @@ export const MESSAGES = {
   },
   URL: {
     CREATE_SUCCESS: 'Short URL created successfully',
+    ALREADY_EXISTS: 'You have already shortened this URL',
     FETCH_SUCCESS: 'URLs fetched successfully',
     NOT_FOUND: 'Short URL not found',
     INVALID_URL: 'Please provide a valid URL',

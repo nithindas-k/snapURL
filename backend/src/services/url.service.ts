@@ -1,25 +1,36 @@
 import { IUrlService } from './interfaces/IUrlService';
 import { IUrlRepository } from '../repositories/interfaces/IUrlRepository';
-import { UrlResponseDto } from '../mappers/interfaces/IUrlMapper';
-import { UrlMapper } from '../mappers/url.mapper';
-import { ShortCodeUtil } from '../utils/short-code.util';
+import { IUrlMapper, UrlResponseDto } from '../mappers/interfaces/IUrlMapper';
+import { IShortCodeService } from './interfaces/IShortCodeService';
 import { appConfig } from '../config/app.config';
 import { MESSAGES } from '../constants/messages.constants';
 import { STATUS_CODES } from '../constants/status-codes.constants';
-import { AppError } from './auth.service';
+import { AppError } from '../errors/app.error';
 
 export class UrlService implements IUrlService {
-  private urlMapper = new UrlMapper();
-
-  constructor(private urlRepository: IUrlRepository) {}
+  constructor(
+    private urlRepository: IUrlRepository,
+    private shortCodeService: IShortCodeService,
+    private urlMapper: IUrlMapper
+  ) {}
 
   async createShortUrl(originalUrl: string, userId: string): Promise<UrlResponseDto> {
+    // Check if this user already shortened the same URL
+    const existing = await this.urlRepository.findByOriginalUrlAndUserId(originalUrl, userId);
+    if (existing) {
+      throw new AppError(
+        MESSAGES.URL.ALREADY_EXISTS,
+        STATUS_CODES.CONFLICT,
+        this.urlMapper.toResponse(existing, appConfig.baseUrl)
+      );
+    }
+
     let shortCode: string;
     let exists = true;
 
     // generate unique short code — retry on collision
     do {
-      shortCode = ShortCodeUtil.generate();
+      shortCode = this.shortCodeService.generate();
       exists = await this.urlRepository.shortCodeExists(shortCode);
     } while (exists);
 
